@@ -185,8 +185,14 @@ trait BasicStructure {
 	 */
 	private function createUser(
 		$user, $password, $displayName = null, $email = null, $initialize = true,
-		$method = "api"
+		$method = null
 	) {
+		if ($method === null && getenv("TEST_LDAP") === "true") {
+			//guess yourself
+			$method = "ldap";
+		} else {
+			$method = "api";
+		}
 		$user = trim($user);
 		$method = trim(strtolower($method));
 		$baseUrl = $this->getMinkParameter("base_url");
@@ -216,6 +222,9 @@ trait BasicStructure {
 						. $result["stdOut"] . " " . $result["stdErr"]
 					);
 				}
+				break;
+			case "ldap";
+				//creating users in LDAP is not implemented, so assume user exists
 				break;
 			default:
 				throw new InvalidArgumentException(
@@ -274,7 +283,13 @@ trait BasicStructure {
 	 * @return void
 	 * @throws Exception
 	 */
-	private function createGroup($group, $method = "api") {
+	private function createGroup($group, $method = null) {
+		if ($method === null && getenv("TEST_LDAP") === "true") {
+			//guess yourself
+			$method = "ldap";
+		} else {
+			$method = "api";
+		}
 		$group = trim($group);
 		$method = trim(strtolower($method));
 		switch ($method) {
@@ -298,6 +313,9 @@ trait BasicStructure {
 						. $result["stdOut"] . " " . $result["stdErr"]
 					);
 				}
+				break;
+			case "ldap";
+				//creating groups in LDAP is not implemented, so assume group exists
 				break;
 			default:
 				throw new InvalidArgumentException(
@@ -327,7 +345,13 @@ trait BasicStructure {
 	 * @return void
 	 * @throws Exception
 	 */
-	public function theUserIsInTheGroup($user, $group, $method = "api") {
+	public function theUserIsInTheGroup($user, $group, $method = null) {
+		if ($method === null && getenv("TEST_LDAP") === "true") {
+			//guess yourself
+			$method = "ldap";
+		} else {
+			$method = "api";
+		}
 		$method = trim(strtolower($method));
 		switch ($method) {
 			case "api":
@@ -351,10 +375,34 @@ trait BasicStructure {
 					);
 				}
 				break;
+			case "ldap";
+				//adding users to groups in LDAP is not implemented, so assume user is in group
+				break;
 			default:
 				throw new InvalidArgumentException(
 					"Invalid method to add a user to a group"
 				);
+		}
+	}
+
+	/**
+	 * @return void
+	 * @BeforeScenario
+	 * @LDAP
+	 */
+	public function setUpLDAPUsers() {
+		if (getenv("TEST_LDAP") === "true") {
+			$result = SetupHelper::runOcc(
+				["user:sync", "OCA\User_LDAP\User_Proxy", "-m remove"]
+			);
+			if ((int)$result['code'] !== 0) {
+				throw new Exception(
+					"could not sync users with LDAP. stdOut:\n" .
+					$result['stdOut'] . "\n" .
+					"stdErr:\n" .
+					$result['stdErr'] . "\n"
+				);
+			}
 		}
 	}
 
