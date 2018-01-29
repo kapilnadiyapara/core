@@ -1068,6 +1068,36 @@ class ViewTest extends TestCase {
 		$this->assertEquals('foo', $view->file_get_contents(''));
 	}
 
+	public function testReadfile() {
+		$calledBeforeEvent = [];
+		$calledAfterEvent = [];
+		\OC::$server->getEventDispatcher()->addListener('file.beforeread', function ($event) use (&$calledBeforeEvent) {
+			$calledBeforeEvent[] = 'file.beforeread';
+			$calledBeforeEvent[] = $event;
+		});
+		\OC::$server->getEventDispatcher()->addListener('file.afterread', function ($event) use (&$calledAfterEvent) {
+			$calledAfterEvent[] = 'file.afterread';
+			$calledAfterEvent[] = $event;
+		});
+		$storage = new Temporary([]);
+		$scanner = $storage->getScanner();
+		$storage->file_put_contents('foo.txt', 'foobar');
+		Filesystem::mount($storage, [], '/test/');
+		$scanner->scan('');
+		$view = new View('/test/foo.txt');
+
+		@ob_start();
+		$this->assertEquals(6, $view->readfile(''));
+		@ob_clean();
+
+		$this->assertInstanceOf(GenericEvent::class, $calledBeforeEvent[1]);
+		$this->assertInstanceOf(GenericEvent::class, $calledAfterEvent[1]);
+		$this->assertEquals('file.beforeread', $calledBeforeEvent[0]);
+		$this->assertEquals('file.afterread', $calledAfterEvent[0]);
+		$this->assertArrayHasKey('path', $calledBeforeEvent[1]);
+		$this->assertArrayHasKey('path', $calledAfterEvent[1]);
+	}
+
 	/**
 	 * @dataProvider tooLongPathDataProvider
 	 * @expectedException \OCP\Files\InvalidPathException

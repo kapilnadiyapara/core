@@ -432,19 +432,22 @@ class View {
 	 * @throws \OCP\Files\InvalidPathException
 	 */
 	public function readfile($path) {
-		$this->assertPathLength($path);
-		@ob_end_clean();
-		$handle = $this->fopen($path, 'rb');
-		if ($handle) {
-			$chunkSize = 8192; // 8 kB chunks
-			while (!feof($handle)) {
-				echo fread($handle, $chunkSize);
-				flush();
+		$absolutePath = $this->getAbsolutePath($path);
+		return $this->emittingCall(function () use (&$path) {
+			$this->assertPathLength($path);
+			@ob_end_clean();
+			$handle = $this->fopen($path, 'rb');
+			if ($handle) {
+				$chunkSize = 8192; // 8 kB chunks
+				while (!feof($handle)) {
+					echo fread($handle, $chunkSize);
+					flush();
+				}
+				$size = $this->filesize($path);
+				return $size;
 			}
-			$size = $this->filesize($path);
-			return $size;
-		}
-		return false;
+			return false;
+		}, ['before' => ['path' => $absolutePath], 'after' => ['path' => $absolutePath]], 'file', 'read');
 	}
 
 	/**
