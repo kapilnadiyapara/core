@@ -90,11 +90,9 @@ class TemplateLayout extends \OC_Template {
 					break;
 				}
 			}
-
-			$user = \OC::$server->getUserSession()->getUser();
-			$this->assign('user_displayname', $user->getDisplayName());
-			$this->assign('user_email', $user->getEMailAddress());
-			$this->assign('user_uid', $user->getUID());
+			$userDisplayName = \OC_User::getDisplayName();
+			$this->assign('user_displayname', $userDisplayName);
+			$this->assign('user_uid', \OC_User::getUser());
 			$this->assign('enableAvatars', $this->config->getSystemValue('enable_avatars', true) === true);
 
 			if (\OC_User::getUser() === false) {

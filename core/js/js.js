@@ -11,7 +11,6 @@
 var oc_debug;
 var oc_webroot;
 
-var oc_current_user = document.getElementsByTagName('head')[0].getAttribute('data-user');
 var oc_requesttoken = document.getElementsByTagName('head')[0].getAttribute('data-requesttoken');
 
 window.oc_config = window.oc_config || {};
@@ -76,13 +75,6 @@ var OC = {
 	_capabilities: window.oc_capabilities || null,
 
 	appswebroots: (typeof oc_appswebroots !== 'undefined') ? oc_appswebroots : false,
-	/**
-	 * Currently logged in user or null if none
-	 *
-	 * @type String
-	 * @deprecated use {@link OC.getCurrentUser} instead
-	 */
-	currentUser: (typeof oc_current_user !== 'undefined') ? oc_current_user : false,
 	config: window.oc_config,
 	appConfig: window.oc_appconfig || {},
 	theme: window.oc_defaults || {},
@@ -322,17 +314,10 @@ var OC = {
 	 * @since 9.0.0
 	 */
 	getCurrentUser: function () {
-		if (_.isUndefined(this._currentUserDisplayName)) {
-			this._currentUserDisplayName = document.getElementsByTagName('head')[0].getAttribute('data-user-displayname');
+		if (!_.isUndefined(oc_user)) {
+			return oc_user;
 		}
-		if (_.isUndefined(this._currentUserEmail)) {
-			this._currentUserEmail = document.getElementsByTagName('head')[0].getAttribute('data-user-email') || null;
-		}
-		return {
-			uid: this.currentUser,
-			displayName: this._currentUserDisplayName,
-			email: this._currentUserEmail
-		};
+		return null;
 	},
 
 	/**
