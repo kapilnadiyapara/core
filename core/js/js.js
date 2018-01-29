@@ -75,6 +75,13 @@ var OC = {
 	_capabilities: window.oc_capabilities || null,
 
 	appswebroots: (typeof oc_appswebroots !== 'undefined') ? oc_appswebroots : false,
+	/**
+	 * Currently logged in user or null if none
+	 *
+	 * @type String
+	 * @deprecated use {@link OC.getCurrentUser} instead
+	 */
+	currentUser: (typeof oc_user !== 'undefined') ? oc_user.uid : false,
 	config: window.oc_config,
 	appConfig: window.oc_appconfig || {},
 	theme: window.oc_defaults || {},
