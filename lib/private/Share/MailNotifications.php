@@ -189,8 +189,8 @@ class MailNotifications {
 	public function sendLinkShareMailFromBody($recipient, $subject, $htmlBody, $textBody, $options = array()) {
 
 		$recipients    = $this->_mailStringToArray($recipient);
-		$ccRecipients  = ($options['cc']) ? $this->_mailStringToArray($options['cc']) : null;
-		$bccRecipients = ($options['bcc']) ? $this->_mailStringToArray($options['bcc']) : null;
+		$ccRecipients  = (!empty($options['cc'])) ? $this->_mailStringToArray($options['cc']) : null;
+		$bccRecipients = (!empty($options['bcc'])) ? $this->_mailStringToArray($options['bcc']) : null;
 
 		try {
 			$message = $this->mailer->createMessage();
